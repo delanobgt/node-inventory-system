@@ -78,8 +78,8 @@
           remainingQuantity = rows[0].quantity
           remainingPrice = rows[0].price
           averagePrice = remainingPrice / remainingQuantity
+          rows.shift()
         }
-        rows.shift()
         for (let row of rows) {
           if (moment(row.doneAt).isSameOrAfter(moment(txtStartDate)) && formattedRows.length === 0) {
             formattedRows.push([

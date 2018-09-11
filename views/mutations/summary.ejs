@@ -4,19 +4,16 @@
   #table {
     width: 100%;
   }
-
-  th:first-child, td:first-child {
-    display: none;
-  }
 </style>
 
 <body>
 
   <div class="uk-container">
     <h1 class="uk-margin uk-text-center uk-text-primary">
-      Inventory Mutation Summary<br> 
+      Inventory Mutation Summary<br>
       <span class="uk-text-muted">
-        <%= moment(txtStartDate).format('Do MMMM YYYY') %> - <%= moment(txtEndDate).format('Do MMMM YYYY') %>
+        <%= moment(txtStartDate).format('Do MMMM YYYY') %> -
+        <%= moment(txtEndDate).format('Do MMMM YYYY') %>
       </span>
     </h1>
 
@@ -24,14 +21,8 @@
       <table id="table" class="display" style="width: 100%;">
         <thead>
           <tr>
-            <th>Ordering ID</th>
-            <th>Done At</th>
-            <th>Invoice ID</th>
-            <th>Info</th>
-            <th>In</th>
-            <th>Purchase Price</th>
-            <th>Out</th>
-            <th>Sale Price</th>
+            <th>No.</th>
+            <th>Product Name</th>
             <th>Remaining Quantity</th>
             <th>Average Price</th>
             <th>Remaining Price</th>
@@ -59,14 +50,10 @@
       UIkit.notification.closeAll()
       UIkit.notification('<span uk-icon="icon: cog"></span> Fetching..')
       try {
-        let products = await $.get('/products/api')
-        console.log(products)
         let rows = await $.get('/mutations/api', {
           txtStartDate,
           txtEndDate
         })
-        console.log(rows)
-        return
         rows.sort((a, b) => {
           if (a.doneAt != b.doneAt) {
             return new Date(a.doneAt) - new Date(b.doneAt)
@@ -76,58 +63,26 @@
             return a.invoiceID.localeCompare(b.invoiceID)
           }
         })
+
+        let productNamesToMutations = {}
+        for (let row of rows) 
+          (productNamesToMutations[row.product.name] = productNamesToMutations[row.product.name] || []).push(row)
+
+        let products = await $.get('/products/api')
         let formattedRows = [], counter = 0
-        let remainingQuantity, remainingPrice, averagePrice
-        if (rows[0].info === '##INITIAL##') {
-          remainingQuantity = rows[0].quantity
-          remainingPrice = rows[0].price
-          averagePrice = remainingPrice / remainingQuantity
-        }
-        rows.shift()
-        for (let row of rows) {
-          if (moment(row.doneAt).isSameOrAfter(moment(txtStartDate)) && formattedRows.length === 0) {
-            formattedRows.push([
-              counter++,
-              '',
-              '',
-              'Beginning Balance',
-              '',
-              '',
-              '',
-              '',
-              remainingPrice,
-              Number.isNaN(averagePrice) ? '-' : averagePrice,
-              remainingQuantity,
-            ])
-          }
-          if (row.type === 'Buy') {
-            remainingQuantity += row.quantity
-            remainingPrice += row.quantity * row.price
-            averagePrice = remainingPrice / remainingQuantity
-          } else if (row.type === 'Sell') {
-            remainingQuantity -= row.quantity
-            remainingPrice -= row.quantity * averagePrice
+        for (let product of products) {
+          if (!productNamesToMutations[product.name]) {
+            formattedRows.push(
+              [counter++].concat([product.name, 0, 0, 0])
+              )
           } else {
-            console.log('Wow! Ada yang Error!')
-            alert('Wow! Ada yang Error!')
-            throw new Error('Wow! Ada yang Error!')
-          }
-          if (moment(row.doneAt).isSameOrAfter(moment(txtStartDate))) {
-            formattedRows.push([
-              counter++,
-              moment(row.doneAt).format('MM-DD-YYYY'),
-              row.invoiceID,
-              row.info,
-              row.type === 'Buy' ? row.quantity: '',
-              row.type === 'Buy' ? formatIndo(row.quantity * row.price) : '',
-              row.type === 'Sell' ? row.quantity: '',
-              row.type === 'Sell' ? formatIndo(row.quantity * averagePrice) : '',
-              formatIndo(remainingQuantity),
-              formatIndo(averagePrice),
-              formatIndo(remainingPrice)
-            ])
+            formattedRows.push(
+              [counter++].concat(getEndingRow(productNamesToMutations[product.name]))
+            )
           }
         }
+        
+        console.log(formattedRows)
 
         let table = $table.DataTable({
           // scrollX: true,
@@ -169,8 +124,8 @@
         })
 
         table
-          .column( '0:visible' )
-          .order( 'asc' )
+          .column('0:visible')
+          .order('asc')
           .draw()
         UIkit.notification.closeAll()
         UIkit.notification('<span uk-icon="icon: check"></span> Loaded')
@@ -182,6 +137,36 @@
         UIkit.notification('<span uk-icon="icon: ban"></span> Load failed!')
         return null
       }
+    }
+
+    function getEndingRow(rows) {
+      let remainingQuantity = 0, remainingPrice = 0, averagePrice = -1
+      if (rows[0].info === '##INITIAL##') {
+        remainingQuantity = rows[0].quantity
+        remainingPrice = rows[0].price
+        averagePrice = remainingPrice / remainingQuantity
+        rows.shift()
+      }
+      for (let row of rows) {
+        if (row.type === 'Buy') {
+          remainingQuantity += row.quantity
+          remainingPrice += row.quantity * row.price
+          averagePrice = remainingPrice / remainingQuantity
+        } else if (row.type === 'Sell') {
+          remainingQuantity -= row.quantity
+          remainingPrice -= row.quantity * averagePrice
+        } else {
+          console.log('Wow! Ada yang Error!')
+          alert('Wow! Ada yang Error!')
+          throw new Error('Wow! Ada yang Error!')
+        }
+      }
+      return [
+        rows[0].product.name,
+        formatIndo(remainingQuantity),
+        formatIndo(averagePrice),
+        formatIndo(remainingPrice)
+      ]
     }
 
     function formatIndo(num) {
