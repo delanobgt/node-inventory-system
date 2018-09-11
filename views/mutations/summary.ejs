@@ -140,7 +140,7 @@
     }
 
     function getEndingRow(rows) {
-      let remainingQuantity = 0, remainingPrice = 0, averagePrice = -1
+      let remainingQuantity = 0, remainingPrice = 0, averagePrice = 0
       if (rows[0].info === '##INITIAL##') {
         remainingQuantity = rows[0].quantity
         remainingPrice = rows[0].price
