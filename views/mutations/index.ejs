@@ -1,0 +1,371 @@
+<% include ../partials/table-header %>
+
+<style>
+  .form-create {
+    /* background: rgb(230, 230, 230); */
+  }
+  .form-update {
+    background: lightgreen;
+  }
+
+  th:first-child, td:first-child {
+    display: none;
+  }
+
+  .table-update, .table-delete {
+    cursor: pointer;
+    opacity: 0.65;
+    padding: 0.2em;
+    border-radius: 100%;
+  }
+  .table-update:hover, .table-delete:hover {
+    opacity: 1;
+    background: rgb(220, 220, 220);
+  }
+  #form-view {
+    align-items: center;
+  }
+</style>
+
+<body>
+  <% include ../partials/nav %>
+
+  <div class="uk-margin">
+    <a href="/" class="uk-button uk-button-danger" type="button">
+      <span uk-icon="icon: arrow-left"></span> Back
+    </a>
+  </div>
+
+  <br>
+  <div id="modal-update" uk-modal>
+    <div class="uk-modal-dialog uk-modal-body">
+      <h2 class="uk-modal-title">Update Mutation</h2>
+      <form id="form-update" class="form-create">
+        <div class="uk-margin">
+          <label for="txt-id">Mutations ID</label>
+          <input id="txt-id" pattern="\d+" class="uk-input" type="text" placeholder="Mutation ID" required>
+        </div>
+        <div class="uk-margin">
+          <label for="txt-invoice-id">Invoice ID</label>
+          <input id="txt-invoice-id" class="uk-input" type="text" placeholder="Invoice ID" required>
+        </div>
+        <div class="uk-margin">
+          <label for="sel-product-name">Product Name</label>
+          <select id="sel-product-name" class="uk-select" required>
+            <% for (let product of products) { %>
+            <option>
+              <%= product.name %>
+            </option>
+            <% } %>
+          </select>
+        </div>
+        <div class="uk-margin">
+          <label for="txt-date">Done At (MM-DD-YYYY)</label>
+          <input id="txt-date" class="uk-input" type="date" placeholder="Done At" required>
+        </div>
+        <div class="uk-margin">
+          <label for="txt-info">Info</label>
+          <textarea id="txt-info" class="uk-textarea" rows="2" placeholder="Info"></textarea>
+        </div>
+        <label for="rd-type">Type</label>
+        <div id="rd-type" class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
+          <label><input class="uk-radio" type="radio" value="Sell" name="rd-type" checked> Sell</label>
+          <label><input class="uk-radio" type="radio" value="Buy" name="rd-type"> Buy</label>
+        </div>
+        <div class="uk-margin">
+          <label for="txt-qty">Quantity</label>
+          <input id="txt-qty" class="uk-input" type="text" pattern="\d+" placeholder="Quantity" required>
+        </div>
+        <div class="uk-margin" style="display:none;">
+          <label for="txt-price">Price per Unit</label>
+          <input id="txt-price" class="uk-input" type="text" pattern="\d+" placeholder="Price per Unit">
+        </div>
+        <div class="uk-margin uk-text-right">
+          <button class="uk-button uk-button-default uk-modal-close" type="button">Cancel</button>
+          <button class="uk-button uk-button-primary" type="submit">Update</button>
+          <button class="uk-modal-close-default" type="button" uk-close></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="uk-container uk-animation-fade">
+
+    <h1 class="uk-margin uk-text-center uk-text-primary">Inventory Mutation Data</h1>
+
+    <form id="form-view" class="uk-flex uk-margin uk-card uk-card-default uk-card-body uk-box-shadow-medium">
+      <select id="sel-scope" class="uk-select" required>
+        <option selected>Summary</option>
+        <% for (let product of products) { %>
+        <option>
+          <%= product.name %>
+        </option>
+        <% } %>
+      </select>
+      <input id="txt-date-start" class="uk-input" type="date" placeholder="Start Date" required>
+      <span uk-icon="icon: arrow-right"></span>
+      <input id="txt-date-end" class="uk-input" type="date" placeholder="End Date" required>
+      <button class="uk-button uk-button-danger" type="submit">Summary</button>
+    </form>
+
+    <div id="div_table" style="display:none;" class="uk-card uk-card-default uk-card-body uk-box-shadow-medium">
+      <div class="uk-margin uk-text-right">
+        <button id="link-report" class="uk-button uk-button-danger">View Report<span uk-icon="icon: arrow-right"></span></button>
+      </div>
+      <table id="table" class="display" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Mutation ID</th>
+            <th>Invoice ID</th>
+            <th>Done At</th>
+            <th>Info</th>
+            <th>Type</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+  </div>
+
+  <% include ../partials/table-script %>
+  <script>
+    $(document).ready(async function () {
+      await initFormView()
+      initLink()
+    })
+
+    function initLink() {
+      $('#link-report').click(function () {
+        let productName = $('#sel-scope').val()
+        let txtStartDate = $('#txt-date-start').val()
+        let txtEndDate = $('#txt-date-end').val()
+        let tab = window.open(
+          `/mutations/report?txtStartDate=${txtStartDate}&txtEndDate=${txtEndDate}&productName=${productName}`, 
+          '_blank')
+        tab.focus()
+      })
+    }
+
+    async function initFormView() {
+      $('#form-view').submit(async function (event) {
+        event.preventDefault()
+        if ($('#sel-scope').val() === 'Summary') {
+          let productName = $('#sel-scope').val()
+          let txtStartDate = $('#txt-date-start').val()
+          let txtEndDate = $('#txt-date-end').val()
+          let tab = window.open(
+            `/mutations/summary?txtStartDate=${txtStartDate}&txtEndDate=${txtEndDate}`, 
+            '_blank')
+          tab.focus()
+        } else {
+          let productName = $('#sel-scope').val()
+          let txtStartDate = $('#txt-date-start').val()
+          let txtEndDate = $('#txt-date-end').val()
+          let table = await initTable('#table', productName, txtStartDate, txtEndDate)
+        }
+      })[0].reset()
+
+      $('#sel-scope').on('change', function () {
+        if (this.value === 'Summary') {
+          $('#form-view')
+            .find('button')
+            .removeClass('uk-button-primary')
+            .addClass('uk-button-danger')
+            .text('Summary')
+        } else {
+          $('#form-view')
+            .find('button')
+            .removeClass('uk-button-danger')
+            .addClass('uk-button-primary')
+            .text('View')
+        }
+      })
+    }
+
+    async function initTable(tableSelector, productName, txtStartDate, txtEndDate) {
+      const $table = $(tableSelector)
+
+      $('#div_table').hide(0)
+      UIkit.notification.closeAll()
+      UIkit.notification('<span uk-icon="icon: cog"></span> Fetching..')
+      try {
+        let rows = await $.get('/mutations/api', { txtStartDate, txtEndDate, productName })
+        console.log(rows)
+        let formattedRows = rows.map(row => [
+          row.id,
+          row.invoiceID,
+          moment(row.doneAt).format('MM-DD-YYYY'),
+          row.info,
+          row.type,
+          row.quantity,
+          row.type === 'Buy' ? row.price : '',
+          '<span class="table-update" uk-icon="icon: pencil"></span>',
+          '<span class="table-delete" uk-icon="icon: close"></span>'
+        ])
+        let table = $table.DataTable({
+          destroy: true,
+          deferRender: true,
+          responsive: true,
+          dom: 'Bfrtip',
+          lengthMenu: [
+            [10, 25, 50, -1],
+            [10, 25, 50, 'All']
+          ],
+          buttons: [
+            'pageLength',
+            {
+              extend: 'copyHtml5',
+              exportOptions: {
+                columns: [0, 1, 2],
+              }
+            },
+            {
+              extend: 'excelHtml5',
+              title: `Inventory Mutation Data [${productName}] (${moment(txtStartDate).format('Do MMMM YYYY')} - ${moment(txtEndDate).format('Do MMMM YYYY')})`,
+              exportOptions: {
+                columns: [0, 1, 2]
+              }
+            },
+            {
+              extend: 'pdf',
+              title: `Inventory Mutation Data [${productName}] (${moment(txtStartDate).format('Do MMMM YYYY')} - ${moment(txtEndDate).format('Do MMMM YYYY')})`,
+              text: 'Pdf',
+              orientation: 'landscape',
+              exportOptions: {
+                columns: [0, 1, 2]
+              }
+            }
+          ],
+          data: formattedRows
+        })
+
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: check"></span> Loaded')
+
+        $(tableSelector).unbind()
+        // update handler
+        $(tableSelector).on('click', '.table-update', function () {
+          let tableRow = table.row($(this).parent().parent())
+          let tableRowData = tableRow.data()
+
+          $('#form-update').unbind().find('*').unbind()
+          $('#form-update')[0].reset()
+          $('#txt-id').val(tableRowData[0]).attr('disabled', true)
+          $('#txt-invoice-id').val(tableRowData[1])
+          $('#sel-product-name').val(productName)
+          $('#txt-date').val(moment(tableRowData[2], 'MM-DD-YYYY').format('YYYY-MM-DD'))
+          $('#txt-info').val(tableRowData[3])
+          $(`input[type=radio][value=${tableRowData[4]}]`).prop('checked', true)
+          $('#txt-qty').val(tableRowData[5])
+          if (tableRowData[4] == 'Sell') $('#txt-price').attr('required', false).parent().hide()
+          else $('#txt-price').attr('required', true).val(tableRowData[6]).parent().show()
+          $('input[type=radio][name=rd-type]').change(function () {
+            if (this.value == 'Sell') {
+              $('#txt-price').attr('required', false).parent().hide()
+            } else if (this.value == 'Buy') {
+              $('#txt-price').attr('required', true).parent().show()
+            }
+          })
+
+          UIkit.modal($('#modal-update')[0]).show()
+
+          $('#form-update').unbind().submit(async function (event) {
+            event.preventDefault()
+
+            $(this).find('*').attr('disabled', true)
+            UIkit.notification.closeAll()
+            UIkit.notification('<span uk-icon="icon: cog"></span> Updating..')
+            try {
+              // AJAX update
+              let updatedMutation = await $.post(`/mutations/api/${tableRowData[0]}?_method=PUT`, {
+                invoiceID: $(this).find('#txt-invoice-id').val(),
+                productName,
+                doneAt: $(this).find('#txt-date').val(),
+                info: $(this).find('#txt-info').val(),
+                type: $(this).find('input[name="rd-type"]:checked').val(),
+                quantity: $(this).find('#txt-qty').val(),
+                price: $(this).find('#txt-price').val()
+              })
+              console.log(updatedMutation)
+
+              // DOM update
+              tableRow.data([
+                updatedMutation.id,
+                updatedMutation.invoiceID,
+                moment(updatedMutation.doneAt).format('MM-DD-YYYY'),
+                updatedMutation.info,
+                updatedMutation.type,
+                updatedMutation.quantity,
+                updatedMutation.type == 'Buy' ? updatedMutation.price : '',
+                tableRowData[7],
+                tableRowData[8]
+              ])
+
+              $(tableRow.node()).flash('yellow', 800)
+              $(this).find('button[type=button]').click()
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: check"></span> Updated')
+            } catch (err) {
+              console.log('error', err)
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Mutation')
+            } finally {
+              $(this).find('*').attr('disabled', false)
+              $(this).find('#txt-id').attr('disabled', true)
+              $(this).find('#txt-date').focus()
+            }
+          })
+        })
+
+        // delete handler
+        $(tableSelector).on('click', '.table-delete', function () {
+          let tableRow = table.row($(this).parent().parent())
+          let tableRowData = tableRow.data()
+
+          UIkit.modal.confirm(`Are you sure ?`).then(async function () {
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: cog"></span> Deleting..')
+              try {
+                // AJAX delete
+                await $.post(`/mutations/api/${tableRowData[0]}?_method=DELETE`)
+                // animation
+                $(tableRow.node())
+                  .css({
+                    backgroundColor: 'lightgray'
+                  })
+                  .delay(250)
+                  .hide('fast', () => tableRow.remove().draw('full-hold'))
+                UIkit.notification.closeAll()
+                UIkit.notification('<span uk-icon="icon: check"></span> Deleted')
+              } catch (err) {
+                console.log(err)
+                UIkit.notification.closeAll()
+                UIkit.notification('<span uk-icon="icon: ban"></span> Delete failed!')
+              }
+            },
+            function () {
+              console.log('Delete modal closed')
+            })
+        })
+
+        $('#div_table').show(0)
+        return table
+      } catch (err) {
+        console.log(err)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: ban"></span> Load failed!')
+        return null
+      }
+    }
+  </script>
+</body>
+
+<% include ../partials/footer %>

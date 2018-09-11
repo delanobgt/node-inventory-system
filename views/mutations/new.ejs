@@ -1,0 +1,126 @@
+<% include ../partials/table-header %>
+
+<style>
+  .form-create {
+    /* background: rgb(230, 230, 230); */
+  }
+  .form-update {
+    background: lightgreen;
+  }
+</style>
+
+<body>
+  <% include ../partials/nav %>
+
+  <div class="uk-margin">
+    <a href="/" class="uk-button uk-button-danger" type="button">
+      <span uk-icon="icon: arrow-left"></span> Back
+    </a>
+  </div>
+
+  <br>
+  <div class="uk-container uk-card uk-card-default uk-card-body uk-box-shadow-large uk-margin-auto uk-animation-fade" style="width:50%;">
+
+    <h1 class="uk-margin uk-text-center uk-text-primary">Add Mutations</h1>
+
+    <form id="form-create" class="form-create">
+      <div class="uk-margin">
+        <label for="txt-invoice-id">Invoice ID</label>
+        <input id="txt-invoice-id" class="uk-input" type="text" placeholder="Invoice ID" required>
+      </div>
+      <div class="uk-margin">
+        <label for="sel-product-name">Product Name</label>
+        <select id="sel-product-name" class="uk-select" required>
+          <% for (let product of products) { %>
+          <option>
+            <%= product.name %>
+          </option>
+          <% } %>
+        </select>
+      </div>
+      <div class="uk-margin">
+        <label for="txt-date">Done At (MM-DD-YYYY)</label>
+        <input id="txt-date" class="uk-input" type="date" placeholder="Done At" required>
+      </div>
+      <div class="uk-margin">
+        <label for="txt-info">Info</label>
+        <textarea id="txt-info" class="uk-textarea" rows="2" placeholder="Info"></textarea>
+      </div>
+      <label for="rd-type">Type</label>
+      <div id="rd-type" class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
+        <label><input class="uk-radio" type="radio" value="Sell" name="rd-type" checked> Sell</label>
+        <label><input class="uk-radio" type="radio" value="Buy" name="rd-type"> Buy</label>
+      </div>
+      <div class="uk-margin">
+        <label for="txt-qty">Quantity</label>
+        <input id="txt-qty" class="uk-input" type="text" pattern="\d+" placeholder="Quantity" required>
+      </div>
+      <div class="uk-margin" style="display:none;">
+        <label for="txt-price">Price per Unit</label>
+        <input id="txt-price" class="uk-input" type="text" pattern="\d+" placeholder="Price per Unit">
+      </div>
+      <div class="uk-margin uk-text-right">
+        <button class="uk-button uk-button-default" type="reset">Reset</button>
+        <button class="uk-button uk-button-primary" type="submit">Add</button>
+      </div>
+    </form>
+  </div>
+
+  <% include ../partials/script %>
+  <script>
+    $(document).ready(async () => {
+      initForms()
+    })
+
+    function initForms() {
+      $('input[type=date]').on('click', function(e) { e.preventDefault() })
+
+      $('input[type=radio][name=rd-type]').change(function () {
+          if (this.value == 'Sell') {
+            $('#txt-price').attr('required', false).parent().hide()
+          } else if (this.value == 'Buy') {
+            $('#txt-price').attr('required', true).parent().show()
+          }
+        })
+
+      $('#form-create')[0].reset()
+      $('#form-create').submit(async function (event) {
+        event.preventDefault()
+
+        let productName = $('#sel-product-name, #txt-date').val()
+        $(this).find('*').not('#sel-product-name').attr('disabled', true)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
+        try {  
+          // AJAX create
+          let newMutation = await $.post(`/mutations/api`, {
+            invoiceID: $(this).find('#txt-invoice-id').val(),
+            productName: productName,
+            doneAt: $(this).find('#txt-date').val(),
+            info: $(this).find('#txt-info').val(),
+            type: $(this).find('input[name="rd-type"]:checked').val(),
+            quantity: $(this).find('#txt-qty').val(),
+            price: $(this).find('#txt-price').val()
+          })
+          console.log(newMutation)
+          
+          UIkit.notification.closeAll()
+          UIkit.notification('<span uk-icon="icon: check"></span> Added')
+          $(this).find('#txt-invoice-id').val('')
+          $(this).find('#txt-info').val('')
+          $(this).find('#txt-qty').val('')
+          $(this).find('#txt-price').val('')
+        } catch (err) {
+          console.log('error', err)
+          UIkit.notification.closeAll()
+          UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Mutation')
+        } finally {
+          $(this).find('*').not('#sel-product-name, #txt-date').attr('disabled', false)
+          $(this).find('#txt-invoice-id').focus()
+        }
+      })
+    }
+  </script>
+</body>
+
+<% include ../partials/footer %>  

@@ -1,0 +1,94 @@
+<% include ../partials/table-header %>
+
+<style>
+  .form-create {
+    /* background: rgb(230, 230, 230); */
+  }
+  .form-update {
+    background: lightgreen;
+  }
+</style>
+
+<body>
+  <% include ../partials/nav %>
+
+  <div class="uk-margin">
+    <a href="/" class="uk-button uk-button-danger" type="button">
+      <span uk-icon="icon: arrow-left"></span> Back
+    </a>
+  </div>
+
+  <br>
+  <div class="uk-container uk-card uk-card-default uk-card-body uk-box-shadow-large uk-margin-auto uk-animation-fade" style="width:50%;">
+    
+    <h1 class="uk-margin uk-text-center uk-text-primary">Initial Balance</h1>
+
+    <form id="form-create" class="form-create">
+      <div class="uk-margin">
+        <select id="sel-scope" class="uk-select" required>
+          <option disabled selected>Select a product</option>
+          <% for (let product of products) { %>
+          <option>
+            <%= product.name %>
+          </option>
+          <% } %>
+        </select>
+      </div>
+      <div class="uk-margin">
+        <label for="txt-qty">Remaining quantity</label>
+        <input id="txt-qty" class="uk-input" type="text" pattern="\d+" placeholder="Remaining quantity" required disabled>
+      </div>
+      <div class="uk-margin" style="">
+        <label for="txt-price">Remaining price</label>
+        <input id="txt-price" class="uk-input" type="text" pattern="\d+" placeholder="Remaining price" required disabled>
+      </div>
+      <div class="uk-margin uk-text-right">
+        <button class="uk-button uk-button-primary" type="submit" disabled>Save</button>
+      </div>
+    </form>
+  </div>
+
+  <% include ../partials/script %>
+  <script>
+    $(document).ready(async () => {
+      initForms()
+    })
+
+    function initForms() {
+      $('#sel-scope').on('change', async function () {
+        $('#form-create').find('*').attr('disabled', false)
+        let initialMutation = await $.get(`/mutations/api/initial-balance/${$(this).val()}`)
+        $('#txt-qty').val(initialMutation.quantity)
+        $('#txt-price').val(initialMutation.price)
+      })
+
+      $('#form-create')[0].reset()
+      $('#form-create').submit(async function (event) {
+        event.preventDefault()
+
+        let productName = $('#sel-scope').val()
+        $(this).find('button').attr('disabled', true)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
+        try {
+          // AJAX update
+          let initialMutation = await $.post(`/mutations/api/initial-balance/${productName}`, {
+            quantity: $(this).find('#txt-qty').val(),
+            price: $(this).find('#txt-price').val()
+          })
+          
+          UIkit.notification.closeAll()
+          UIkit.notification('<span uk-icon="icon: check"></span> Saved')
+        } catch (err) {
+          console.log('error', err)
+          UIkit.notification.closeAll()
+          UIkit.notification('<span uk-icon="icon: ban"></span> Error Initial Balance')
+        } finally {
+          $(this).find('button').attr('disabled', true)
+        }
+      })
+    }
+  </script>
+</body>
+
+<% include ../partials/footer %>  

@@ -1,0 +1,278 @@
+<% include ../partials/table-header %>
+
+<style>
+  .sticky-form > * {
+    margin: 0.2em;
+  }
+  .sticky-form {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    padding: 0.35em;
+  }
+
+  th:first-child, td:first-child {
+    display: none;
+  }
+
+  .form-create {
+    background: rgb(230, 230, 230);
+  }
+  .form-update {
+    background: lightgreen;
+  }
+
+  .table-update, .table-delete {
+    cursor: pointer;
+    opacity: 0.65;
+    padding: 0.2em;
+    border-radius: 100%;
+  }
+  .table-update:hover, .table-delete:hover {
+    opacity: 1;
+    background: rgb(220, 220, 220);
+  }
+  
+</style>
+
+<body>
+  <% include ../partials/nav %>
+
+  <div class="uk-margin">
+    <a href="/" class="uk-button uk-button-danger" type="button">
+      <span uk-icon="icon: arrow-left"></span> Back
+    </a>
+  </div>
+
+  <br>
+  <div class="uk-container">
+
+    <h1 class="uk-margin uk-text-center uk-text-primary">Products</h1>
+
+    <div id="div_table" class="uk-box-shadow-medium uk-card uk-card-default uk-card-body">
+      <table id="table" class="display" style="width: 100%; display:none;">
+        <thead>
+          <tr>
+            <th>Product ID</th>
+            <th>Product Name</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <br>
+    <br>
+    <br>
+    <br>
+  </div>
+
+  
+  <form id="form-create" class="form-create sticky-form uk-card uk-card-default">
+    <input id="txt-name" class="uk-input" type="text" placeholder="Product Name" required>
+    <button class="uk-button uk-button-primary" type="submit">Add</button>
+    <button class="uk-button uk-button-default" type="reset">Reset</button>
+  </form>
+
+  <form id="form-update" class="form-update sticky-form uk-card uk-card-default" style="display:none;">
+    <input id="txt-id" class="uk-input" type="text" pattern="\d+" placeholder="Product ID" disabled>
+    <input id="txt-name" class="uk-input" type="text" placeholder="Product Name" required>
+    <button class="uk-button uk-button-primary" type="submit">Update</button>
+    <button class="uk-button uk-button-default" type="button">Cancel</button>
+  </form>
+
+  <% include ../partials/table-script %>
+  <script>
+    $(document).ready(async () => {
+      let table = await initTable('#table')
+      initForms(table)
+    })
+
+    function initForms(table) {
+      $('#form-create').submit(async function (event) {
+        event.preventDefault()
+
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: cog"></span> Saving')
+        $(this).find('*').attr('disabled', true)
+        try {
+          // AJAX create
+          let newProduct = await $.post(`/products/api`, {
+            name: $(this).find('#txt-name').val()
+          })
+          console.log(newProduct)
+          
+          // DOM update
+          table.row
+            .add([
+              newProduct.id,
+              newProduct.name,
+              '<span class="table-update" uk-icon="icon: pencil"></span>',
+              '<span class="table-delete" uk-icon="icon: close"></span>'])
+            .draw('full-hold')
+
+          UIkit.notification.closeAll()
+          UIkit.notification('<span uk-icon="icon: check"></span> Saved')
+          $(this).trigger('reset')
+        } catch (err) {
+          console.log('error', err)
+          UIkit.notification.closeAll()
+          UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Product')
+        } finally {
+          $(this).find('*').attr('disabled', false)
+          $(this).children().first().focus()
+        }
+      })
+    }
+
+    async function initTable(tableSelector) {
+      const $table = $(tableSelector)
+
+      UIkit.notification.closeAll()
+      UIkit.notification('<span uk-icon="icon: cog"></span> Fetching..')
+      try {
+        let rows = await $.get('/products/api')
+        console.log(rows)
+        let formattedRows = rows.map(row => [
+          row.id, 
+          row.name,
+          '<span class="table-update" uk-icon="icon: pencil"></span>', 
+          '<span class="table-delete" uk-icon="icon: close"></span>'])
+        let table = $table.DataTable({
+          destroy: true,
+          deferRender: true,
+          responsive: true,
+          dom: 'Bfrtip',
+          lengthMenu: [
+            [10, 25, 50, -1],
+            [10, 25, 50, 'All']
+          ],
+          buttons: [
+            'pageLength',
+            {
+              extend: 'copyHtml5',
+              exportOptions: {
+                columns: [0, 1]
+              }
+            },
+            {
+              extend: 'excelHtml5',
+              title: 'Inventory Products',
+              exportOptions: {
+                columns: [0, 1]
+              }
+            },
+            {
+              extend: 'pdf',
+              title: 'Inventory Products',
+              text: 'Pdf',
+              orientation: 'landscape',
+              exportOptions: {
+                columns: [0, 1]
+              }
+            }
+          ],
+          data: formattedRows
+        })
+
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: check"></span> Loaded')
+        $table.fadeIn()
+
+        // update handler
+        $(tableSelector).on('click', '.table-update', function () {
+          let tableRow = table.row($(this).parent().parent())
+          let tableRowData = tableRow.data()
+
+          $('#form-update')[0].reset()
+          $('#form-update').find('#txt-id').val(tableRowData[0]).attr('disabled', true)
+          $('#form-update').find('#txt-name').val(tableRowData[1])
+          setTimeout(() => $('#form-update').find('#txt-name').focus, 2000)
+          $('#form-update').find('*').unbind()
+          $('#form-update').submit(async function(event) {
+            event.preventDefault()
+
+            UIkit.notification.closeAll()
+            UIkit.notification('<span uk-icon="icon: cog"></span> Updating..')
+            $(this).find('*').attr('disabled', true)
+            try {
+              // AJAX update
+              let updatedProduct = await $.post(`/products/api/${tableRowData[0]}?_method=PUT`, {
+                name: $(this).find('#txt-name').val()
+              })
+              console.log(updatedProduct)
+              
+              // DOM update
+              tableRow.data([
+                updatedProduct.id,
+                updatedProduct.name,
+                tableRowData[2],
+                tableRowData[3]])
+
+              $(tableRow.node()).flash('yellow', 800)
+              $(this).find('button[type=button]').click()
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: check"></span> Updated')
+            } catch (err) {
+              console.log('error', err)
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Product')
+            } finally {
+              $(this).find('#txt-id').attr('disabled', true)
+              $(this).find('*').attr('disabled', false)
+              $(this).children().first().focus()
+            }
+          })
+          $('#form-update').find('button[type=button]').click(async function() {
+            $('#form-update').hide(0)
+            $('#form-create').show(0)
+          })
+          $('#form-create').hide(0)
+          $('#form-update').show(0)
+        })
+
+        // delete handler
+        $(tableSelector).on('click', '.table-delete', function () {
+          let tableRow = table.row($(this).parent().parent())
+          let tableRowData = tableRow.data()
+
+          UIkit.modal.confirm(`Delete "${tableRowData[1]}" ?`).then(async function() {
+            UIkit.notification.closeAll()
+            UIkit.notification('<span uk-icon="icon: cog"></span> Deleting..')
+            try {
+              // AJAX delete
+              await $.post(`/products/api/${tableRowData[0]}?_method=DELETE`)
+              // animation
+              $(tableRow.node())
+                .css({backgroundColor: 'lightgray'})
+                .delay(250)
+                .hide('fast', () => tableRow.remove().draw('full-hold'))
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: check"></span> Deleted')
+            } catch (err) {
+              console.log(err)
+              UIkit.notification.closeAll()
+              UIkit.notification('<span uk-icon="icon: ban"></span> Delete failed!')
+            }
+          }, function () {
+            console.log('Delete modal closed')
+          })
+        })
+
+        return table
+      } catch (err) {
+        console.log(err)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: ban"></span> Load failed!')
+        return null
+      }
+    }
+  </script>
+</body>
+
+<% include ../partials/footer %>
