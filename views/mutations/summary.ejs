@@ -69,7 +69,7 @@
           (productNamesToMutations[row.product.name] = productNamesToMutations[row.product.name] || []).push(row)
 
         let products = await $.get('/products/api')
-        let formattedRows = [], counter = 0
+        let formattedRows = [], counter = 1
         for (let product of products) {
           if (!productNamesToMutations[product.name]) {
             formattedRows.push(
