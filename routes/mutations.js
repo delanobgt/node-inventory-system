@@ -32,6 +32,10 @@ router.get('/new', async (req, res) => {
   }
 })
 
+router.get('/new/upload/excel', (req, res) => {
+  res.render('mutations/upload-excel')
+})
+
 router.get('/api', async (req, res) => {
   try {
     let mutations = await db.Mutation.findAll({

@@ -111,7 +111,7 @@
           if (moment(row.doneAt).isSameOrAfter(moment(txtStartDate))) {
             formattedRows.push([
               counter++,
-              moment(row.doneAt).format('MM-DD-YYYY'),
+              moment(row.doneAt).format('DD-MM-YYYY'),
               row.invoiceID,
               row.info,
               row.type === 'Buy' ? row.quantity: '',

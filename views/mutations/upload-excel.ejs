@@ -1,0 +1,73 @@
+<% include ../partials/table-header %>
+
+<style>
+  .form-create {
+    /* background: rgb(230, 230, 230); */
+  }
+  .form-update {
+    background: lightgreen;
+  }
+</style>
+
+<body>
+  <% include ../partials/nav %>
+
+  <div class="uk-margin">
+    <a href="/" class="uk-button uk-button-danger" type="button">
+      <span uk-icon="icon: arrow-left"></span> Back
+    </a>
+  </div>
+
+  <div class="uk-container uk-card uk-card-default uk-card-body uk-box-shadow-large uk-margin-auto uk-animation-fade"
+    style="width:50%;">
+
+    <h1 class="uk-margin uk-text-center uk-text-primary">Upload Mutation Excel</h1>
+
+    <div class="js-upload uk-placeholder uk-text-center">
+      <span uk-icon="icon: cloud-upload"></span>
+      <span class="uk-text-middle">Attach Excel File by dropping them here or</span>
+      <div uk-form-custom>
+        <input id="file-excel" type="file" single>
+        <span class="uk-link">selecting one</span>
+      </div>
+    </div>
+
+    <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
+
+  </div>
+
+  <% include ../partials/script %>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.js"></script>
+  <script src="/javascripts/libs/xls-parser.js"></script>
+  <script>
+    XLSParser.onParsed(async (rows) => {
+      console.log(rows)
+    })
+
+    let bar = document.getElementById('js-progressbar')
+    UIkit.upload('.js-upload', {
+      url: '',
+      loadStart: function (e) {
+        bar.removeAttribute('hidden')
+        bar.max = e.total
+        bar.value = e.loaded
+      },
+      progress: function (e) {
+        bar.max = e.total
+        bar.value = e.loaded
+      },
+      loadEnd: function (e) {
+        bar.max = e.total
+        bar.value = e.loaded
+      },
+      completeAll: function () {
+        setTimeout(function () {
+          bar.setAttribute('hidden', 'hidden')
+        }, 1000)
+        alert('Upload Completed')
+      }
+    })
+  </script>
+</body>
+
+<% include ../partials/footer %>
