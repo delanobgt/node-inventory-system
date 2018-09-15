@@ -7,6 +7,10 @@
   .form-update {
     background: lightgreen;
   }
+
+  table, tbody, tr, td {
+    border: 1px solid black;
+  }
 </style>
 
 <body>
@@ -36,12 +40,33 @@
 
   </div>
 
+  <table>
+    <tbody>
+
+    </tbody>
+  </table>
+
   <% include ../partials/script %>
   <script src="/javascripts/libs/xls.js"></script>
   <script src="/javascripts/libs/xls-parser.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
   <script>
     XLSParser.onParsed(async (rows) => {
+      let rowCount = rows.length
+      let colCount = Math.max(...rows.map(row => row.length))
+      console.log(rowCount, colCount)
       console.log(rows)
+
+      $('tbody').empty()
+      rows.forEach((row, index) => {
+        console.log(row)
+        let $tr = $('<tr>').append($('<td>').text(index))
+        row.forEach(cell => {
+          $tr.append($('<td>').text(cell))
+        })
+        $('tbody').append($tr)
+      })
+      
     })
 
     let bar = document.getElementById('js-progressbar')
