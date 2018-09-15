@@ -10,6 +10,10 @@ router.get('/', async (req, res) => {
   res.render('products/index')
 })
 
+router.get('/new/upload/excel', (req, res) => {
+  res.render('products/upload-excel')
+})
+
 router.get('/api', async (req, res) => {
   try {
     let products = await db.Product.findAll({})
@@ -26,6 +30,18 @@ router.post('/api', async (req, res) => {
       name: req.body.name
     })
     res.json(newProduct)
+  } catch (err) {
+    console.log(err)
+    res.status(404).json({
+      msg: 'Error/Duplicate Product'
+    })
+  }
+})
+
+router.post('/api/bulk', async (req, res) => {
+  try {
+    console.log(req.body.products)
+    res.json({})
   } catch (err) {
     console.log(err)
     res.status(404).json({

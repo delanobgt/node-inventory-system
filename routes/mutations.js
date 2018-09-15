@@ -87,6 +87,18 @@ router.post('/api', async (req, res) => {
   }
 })
 
+router.post('/api/bulk', async (req, res) => {
+  try {
+    console.log(req.body.mutations)
+    res.json({})
+  } catch (err) {
+    console.log(err)
+    res.status(404).json({
+      msg: 'Error/Duplicate Mutation'
+    })
+  }
+})
+
 router.put('/api/:mutationID', async (req, res) => {
   try {
     let product = await db.Product.findOne({

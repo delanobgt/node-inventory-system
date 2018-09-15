@@ -1,6 +1,6 @@
 let express = require('express')
 let router = express.Router()
-let bcrypt = require('bcrypt')
+let bcrypt = require('bcrypt-nodejs')
 let passport = require('passport')
 let LocalStrategy = require('passport-local').Strategy
 
@@ -8,6 +8,8 @@ let db = require('../models/index')
 
 // middlewares import
 let auth = require('../middlewares/auth')
+
+const REGISTER_BLOCKED = true
 
 passport.serializeUser((user, done) => {
   done(null, user)
@@ -40,14 +42,14 @@ router.post('/login', passport.authenticate('local', {
   failureRedirect: '/users/login'
 }))
 
-router.get('/new', auth.blocked(true), (req, res) => {
+router.get('/new', auth.blocked(REGISTER_BLOCKED), (req, res) => {
   res.render('users/new')
 })
-router.post('/new', auth.blocked(true), async(req, res) => {
+router.post('/new', auth.blocked(REGISTER_BLOCKED), async(req, res) => {
   let email = req.body.email
   let password = req.body.password
   try {
-    let hashedPassword = await bcrypt.hash(password, parseInt(process.env.USER_SALT_ROUNDS))
+    let hashedPassword = bcrypt.hashSync(password)
     let createdUser = await db.User.create({ email, password: hashedPassword })
     req.login(createdUser.dataValues, (err) => {
       res.redirect('/')

@@ -24,7 +24,7 @@ let XLSParser = (function () {
         type: 'binary'
       })
       let wb = XLS.parse_xlscfb(cfb)
-      let oJS = XLS.utils.sheet_to_row_object_array(wb.Sheets[wb.SheetNames[0]])
+      let oJS = XLS.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]])
       onParsedCb(oJS)
     }
 
