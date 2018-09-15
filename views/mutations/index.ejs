@@ -51,6 +51,7 @@
         <div class="uk-margin">
           <label for="sel-product-name">Product Name</label>
           <select id="sel-product-name" class="uk-select" required>
+            <% products.sort((a, b) => a.name.localeCompare(b.name)) %>
             <% for (let product of products) { %>
             <option>
               <%= product.name %>

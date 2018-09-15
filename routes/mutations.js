@@ -89,8 +89,18 @@ router.post('/api', async (req, res) => {
 
 router.post('/api/bulk', async (req, res) => {
   try {
-    console.log(req.body.mutations)
-    res.json({})
+    let productID = {}
+    let products = await db.Product.findAll()
+    products.forEach(product => { productID[product.name] = product.id })
+
+    let newMutations = []
+    for (let mutation of req.body.mutations) {
+      try {
+        mutation.productID = productID[mutation.productName]
+        newMutations.push(await db.Mutation.create(mutation))
+      } catch (err) { console.log(err) }
+    }
+    res.json(newMutations)
   } catch (err) {
     console.log(err)
     res.status(404).json({

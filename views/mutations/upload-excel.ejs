@@ -7,6 +7,10 @@
   .form-update {
     background: lightgreen;
   }
+
+  table, tbody, tr, td {
+    border: 1px solid black;
+  }
 </style>
 
 <body>
@@ -23,50 +27,115 @@
 
     <h1 class="uk-margin uk-text-center uk-text-primary">Upload Mutation Excel</h1>
 
-    <div class="js-upload uk-placeholder uk-text-center">
-      <span uk-icon="icon: cloud-upload"></span>
-      <span class="uk-text-middle">Attach Excel File by dropping them here or</span>
-      <div uk-form-custom>
-        <input id="file-excel" type="file" single>
-        <span class="uk-link">selecting one</span>
-      </div>
+    <div class="js-upload" uk-form-custom>
+      <input id="file-excel" type="file" single>
+      <button id="file-button" class="uk-button uk-button-primary uk-align-center" type="button" tabindex="-1">SELECT EXCEL FILE..</button>
+      <span class="file-name"></span>
     </div>
 
     <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
 
   </div>
 
+  <table style="display:none">
+    <tbody>
+
+    </tbody>
+  </table>
+
   <% include ../partials/script %>
   <script src="/javascripts/libs/xls.js"></script>
   <script src="/javascripts/libs/xls-parser.js"></script>
+  <script src="/javascripts/libs/jszip.js"></script>
+  <script src="/javascripts/product-mapping.js"></script>
   <script>
     XLSParser.onParsed(async (rows) => {
-      console.log(rows)
-    })
+      if (rows[1][1] !== 'Rincian Valuasi Persediaan') {
+        console.log('Invalid Excel File')
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: ban"></span> Invalid Excel File')
+        return
+      }
 
-    let bar = document.getElementById('js-progressbar')
-    UIkit.upload('.js-upload', {
-      url: '',
-      loadStart: function (e) {
-        bar.removeAttribute('hidden')
-        bar.max = e.total
-        bar.value = e.loaded
-      },
-      progress: function (e) {
-        bar.max = e.total
-        bar.value = e.loaded
-      },
-      loadEnd: function (e) {
-        bar.max = e.total
-        bar.value = e.loaded
-      },
-      completeAll: function () {
-        setTimeout(function () {
-          bar.setAttribute('hidden', 'hidden')
-        }, 1000)
-        alert('Upload Completed')
+      rows = rows.filter(row =>
+        (row[1] === 'Deskripsi Barang') ||
+        (![].includes(row[4]) &&
+        Object.keys(row).length === 11) 
+      )
+      rows = rows.map(row => row.filter(cell => cell))
+
+      let newMutations = []
+      let currentProductName = null
+      for (let row of rows) {
+        if (row[0] === 'Deskripsi Barang') {
+          currentProductName = ProductMapping.map(row[2].trim())
+        } else {
+          let newMutation = {
+            invoiceID: row[2],
+            productName: currentProductName,
+            doneAt: cleanDate(row[0]),
+            info: row[1],
+            type: Number(row[3]) > 0 ? 'Buy' : 'Sell',
+            quantity: Number(row[3]) > 0 ? Number(row[3]) : Number(row[6]),
+            price: Number(row[3]) > 0 ? cleanNumber(row[4]) : cleanNumber(row[7])
+          }
+          newMutations.push(newMutation)
+        }
+      }
+
+      $('table').show()
+      $('tbody').empty()
+      rows.forEach((row, index) => {
+        let $tr = $('<tr>').append($('<td>').text(index))
+        row.forEach(cell => {
+          $tr.append($('<td>').text(cell))
+        })
+        $('tbody').append($tr)
+      })
+
+      UIkit.notification.closeAll()
+      UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
+      $('#file-button').text('Please wait..').attr('disabled', true)
+      try {
+        // AJAX create bulk
+        let fetchedMutations = await $.post(`/mutations/api/bulk`, {
+          mutations: newMutations
+        })
+        console.log(fetchedMutations)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: check"></span> Added all')
+      } catch (err) {
+        console.log('error', err)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Products')
+      } finally {
+        $('#file-button').text('Select Excel File..').attr('disabled', false)
       }
     })
+
+    function cleanDate(date) {
+      let monthMappings = {
+        'Jan': 'Jan',
+        'Feb': 'Feb',
+        'Mar': 'Mar',
+        'Apr': 'Apr',
+        'Mei': 'May',
+        'Jun': 'Jun',
+        'Jul': 'Jul',
+        'Agu': 'Aug',
+        'Sep': 'Sep',
+        'Okt': 'Oct',
+        'Nov': 'Nov',
+        'Des': 'Dec'
+      }
+      let month = monthMappings[date.substring(3, 6)]
+      let cleanDate =  date.substring(0, 3) + month + date.substring(6)
+      return moment(cleanDate, 'DD MMM YYYY').format('YYYY-MM-DD')
+    }
+
+    function cleanNumber(number) {
+      return Number(number.replace(/[^0-9]+/g, ''))
+    }
   </script>
 </body>
 
