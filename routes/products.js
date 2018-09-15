@@ -40,12 +40,17 @@ router.post('/api', async (req, res) => {
 
 router.post('/api/bulk', async (req, res) => {
   try {
-    console.log(req.body.products)
-    res.json({})
+    let newProducts = []
+    for (let product of req.body.products) {
+      try {
+        newProducts.push(await db.Product.create(product))
+      } catch (err) { console.log(err) }
+    }
+    res.json(newProducts)
   } catch (err) {
     console.log(err)
     res.status(404).json({
-      msg: 'Error/Duplicate Product'
+      msg: 'Error/Duplicate Products'
     })
   }
 })

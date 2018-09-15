@@ -27,20 +27,17 @@
 
     <h1 class="uk-margin uk-text-center uk-text-primary">Upload Product Excel</h1>
 
-    <div class="js-upload uk-placeholder uk-text-center">
-      <span uk-icon="icon: cloud-upload"></span>
-      <span class="uk-text-middle">Attach Excel File by dropping them here or</span>
-      <div uk-form-custom>
-        <input id="file-excel" type="file" single>
-        <span class="uk-link">selecting one</span>
-      </div>
+    <div class="js-upload" uk-form-custom>
+      <input id="file-excel" type="file" single>
+      <button id="file-button" class="uk-button uk-button-primary uk-align-center" type="button" tabindex="-1">SELECT EXCEL FILE..</button>
+      <span class="file-name"></span>
     </div>
 
     <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
 
   </div>
 
-  <table>
+  <table style="display:none">
     <tbody>
 
     </tbody>
@@ -49,17 +46,29 @@
   <% include ../partials/script %>
   <script src="/javascripts/libs/xls.js"></script>
   <script src="/javascripts/libs/xls-parser.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+  <script src="/javascripts/libs/jszip.js"></script>
+  <script src="/javascripts/product-mapping.js"></script>
   <script>
     XLSParser.onParsed(async (rows) => {
-      let rowCount = rows.length
-      let colCount = Math.max(...rows.map(row => row.length))
-      console.log(rowCount, colCount)
-      console.log(rows)
+      if (rows[1][0] !== 'Daftar Barang') {
+        console.log('Invalid Excel File')
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: ban"></span> Invalid Excel File')
+        return
+      }
 
+      rows = rows.filter(row => 
+              row[1] !== 'No. Barang' && 
+              !['ONGKOS', 'PPN', 'SHIPPING FEE / HANDLING FEE'].includes(row[4]) &&
+              Object.keys(row).length === 3 && 
+              ((row[1] || []).length >= 3 != (row[2] || []).length >= 3) )
+      rows = rows.map(row => row.filter(cell => cell))
+      
+      let newProducts = rows.map(row => Object.assign({}, { name: ProductMapping.map(row[1]) }))
+      console.log(newProducts)
+      
       $('tbody').empty()
       rows.forEach((row, index) => {
-        console.log(row)
         let $tr = $('<tr>').append($('<td>').text(index))
         row.forEach(cell => {
           $tr.append($('<td>').text(cell))
@@ -67,29 +76,23 @@
         $('tbody').append($tr)
       })
       
-    })
-
-    let bar = document.getElementById('js-progressbar')
-    UIkit.upload('.js-upload', {
-      url: '',
-      loadStart: function (e) {
-        bar.removeAttribute('hidden')
-        bar.max = e.total
-        bar.value = e.loaded
-      },
-      progress: function (e) {
-        bar.max = e.total
-        bar.value = e.loaded
-      },
-      loadEnd: function (e) {
-        bar.max = e.total
-        bar.value = e.loaded
-      },
-      completeAll: function () {
-        setTimeout(function () {
-          bar.setAttribute('hidden', 'hidden')
-        }, 1000)
-        alert('Upload Completed')
+      UIkit.notification.closeAll()
+      UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
+      $('#file-button').text('Please wait..').attr('disabled', true)
+      try {  
+        // AJAX create bulk
+        let fetchedProducts = await $.post(`/products/api/bulk`, {
+          products: newProducts
+        })
+        console.log(fetchedProducts)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: check"></span> Added all')
+      } catch (err) {
+        console.log('error', err)
+        UIkit.notification.closeAll()
+        UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Products')
+      } finally {
+        $('#file-button').text('Select Excel File..').attr('disabled', false)
       }
     })
   </script>
