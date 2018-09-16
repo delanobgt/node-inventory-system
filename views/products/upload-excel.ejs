@@ -76,7 +76,7 @@
               Object.keys(row).length === 3 && 
               ((row[1] || []).length >= 3 != (row[2] || []).length >= 3) )
       rows = rows.map(row => row.filter(cell => cell))
-      
+
       let newProducts = rows.map(row => Object.assign({}, { name: ProductMapping.map(row[1]) }))
       console.log(newProducts)
       

@@ -1,3 +1,4 @@
 node_modules/
 .env
 db/inventory.db
+public/javascripts/misc.js
