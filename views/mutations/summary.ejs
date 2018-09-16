@@ -51,7 +51,6 @@
       UIkit.notification('<span uk-icon="icon: cog"></span> Fetching..')
       try {
         let rows = await $.get('/mutations/api', {
-          txtStartDate,
           txtEndDate
         })
         rows.sort((a, b) => {
@@ -74,7 +73,7 @@
           if (!productNamesToMutations[product.name]) {
             formattedRows.push(
               [counter++].concat([product.name, 0, 0, 0])
-              )
+            )
           } else {
             formattedRows.push(
               [counter++].concat(getEndingRow(productNamesToMutations[product.name]))
@@ -98,26 +97,17 @@
           buttons: [
             'pageLength',
             {
-              extend: 'copyHtml5',
-              exportOptions: {
-                columns: [0, 1, 2],
-              }
+              extend: 'copyHtml5'
             },
             {
               extend: 'excelHtml5',
-              title: "Inventory Mutation Report (<%= moment(txtStartDate).format('Do MMMM YYYY') %> - <%= moment(txtEndDate).format('Do MMMM YYYY') %>)",
-              exportOptions: {
-                columns: [0, 1, 2]
-              }
+              title: "Inventory Mutation Report (<%= moment(txtStartDate).format('Do MMMM YYYY') %> - <%= moment(txtEndDate).format('Do MMMM YYYY') %>)"
             },
             {
               extend: 'pdf',
               title: "Inventory Mutation Report (<%= moment(txtStartDate).format('Do MMMM YYYY') %> - <%= moment(txtEndDate).format('Do MMMM YYYY') %>)",
               text: 'Pdf',
-              orientation: 'landscape',
-              exportOptions: {
-                columns: [0, 1, 2]
-              }
+              orientation: 'landscape'
             }
           ],
           data: formattedRows

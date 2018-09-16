@@ -14,10 +14,6 @@
     padding: 0.35em;
   }
 
-  th:first-child, td:first-child {
-    display: none;
-  }
-
   .form-create {
     background: rgb(230, 230, 230);
   }
@@ -55,7 +51,7 @@
       <table id="table" class="display" style="width: 100%; display:none;">
         <thead>
           <tr>
-            <th>Product ID</th>
+            <th>No.</th>
             <th>Product Name</th>
             <th></th>
             <th></th>
@@ -136,9 +132,9 @@
       UIkit.notification('<span uk-icon="icon: cog"></span> Fetching..')
       try {
         let rows = await $.get('/products/api')
-        console.log(rows)
+        let counter = 1
         let formattedRows = rows.map(row => [
-          row.id, 
+          counter++, 
           row.name,
           '<span class="table-update" uk-icon="icon: pencil"></span>', 
           '<span class="table-delete" uk-icon="icon: close"></span>'])

@@ -11,6 +11,14 @@
   table, tbody, tr, td {
     border: 1px solid black;
   }
+
+  .notes ul {
+    list-style: none;
+  }
+
+  .notes ul li:before {
+    content: '\2714\0020';
+  }
 </style>
 
 <body>
@@ -33,7 +41,23 @@
       <span class="file-name"></span>
     </div>
 
-    <progress id="js-progressbar" class="uk-progress" value="0" max="100" hidden></progress>
+    <hr class="uk-divider-icon">
+
+    <div class="notes">
+      <h3>Modifikasi</h3>
+      <ul>
+        <li>No. Barang</li>
+        <li>Deskripsi Barang</li>
+        <li>Kuantitas</li>
+      </ul>
+      <h3>Export Settings</h3>
+      <ul>
+        <li>Continuous</li>
+        <li>WYSIWYG</li>
+        <li>As text</li>
+        <li>Fast Export</li>
+      </ul>
+    </div>
 
   </div>
 
@@ -67,6 +91,7 @@
       let newProducts = rows.map(row => Object.assign({}, { name: ProductMapping.map(row[1]) }))
       console.log(newProducts)
       
+      // $('table').show()
       $('tbody').empty()
       rows.forEach((row, index) => {
         let $tr = $('<tr>').append($('<td>').text(index))

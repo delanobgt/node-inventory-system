@@ -1,6 +1,6 @@
 let ProductMapping = (function () {
   let mappings = {
-    'A': 'A'
+    'MESRAN MIN 10W SE/CC DR 209L': 'MESRAN 10W @209L'
   }
 
   return {

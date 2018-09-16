@@ -207,7 +207,7 @@
           row.info,
           row.type,
           row.quantity,
-          row.type === 'Buy' ? row.price : '',
+          row.type === 'Buy' ? formatIndo(row.price) : '-',
           '<span class="table-update" uk-icon="icon: pencil"></span>',
           '<span class="table-delete" uk-icon="icon: close"></span>'
         ])
@@ -225,14 +225,14 @@
             {
               extend: 'copyHtml5',
               exportOptions: {
-                columns: [0, 1, 2],
+                columns: [0, 1, 2, 3, 4, 5]
               }
             },
             {
               extend: 'excelHtml5',
               title: `Inventory Mutation Data [${productName}] (${moment(txtStartDate).format('Do MMMM YYYY')} - ${moment(txtEndDate).format('Do MMMM YYYY')})`,
               exportOptions: {
-                columns: [0, 1, 2]
+                columns: [0, 1, 2, 3, 4, 5]
               }
             },
             {
@@ -241,7 +241,7 @@
               text: 'Pdf',
               orientation: 'landscape',
               exportOptions: {
-                columns: [0, 1, 2]
+                columns: [0, 1, 2, 3, 4, 5]
               }
             }
           ],
@@ -365,6 +365,13 @@
         UIkit.notification('<span uk-icon="icon: ban"></span> Load failed!')
         return null
       }
+    }
+
+    function formatIndo(num) {
+      return num.toLocaleString('us', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).replace(/,/g, '#').replace(/\./g, ',').replace(/#/g, '.')
     }
   </script>
 </body>
