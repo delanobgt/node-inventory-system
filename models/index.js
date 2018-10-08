@@ -15,7 +15,8 @@ Mutation.belongsTo(Product, {foreignKey: 'productID', targetKey: 'id'})
 Product.hasMany(Mutation, {foreignKey: 'productID', sourceKey: 'id'})
 
 sequelize.sync({
-  logging: console.log
+  logging: console.log,
+  // force: true,
 }).then(() => {
   console.log('synced')
 })

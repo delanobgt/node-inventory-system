@@ -1,4 +1,4 @@
 node_modules/
-.env
 db/inventory.db
-public/javascripts/misc.js
+.env
+public/javascripts/product-mappings-json.js
