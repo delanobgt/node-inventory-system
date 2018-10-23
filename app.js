@@ -70,7 +70,7 @@ app.get('*', auth.isLoggedIn, (req, res) => {
   res.redirect('/')
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 3090
 app.listen(PORT, () => {
   console.log()
   console.log(`App listening on port ${PORT}`)
