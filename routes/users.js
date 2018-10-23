@@ -9,7 +9,7 @@ let db = require('../models/index')
 // middlewares import
 let auth = require('../middlewares/auth')
 
-const REGISTER_BLOCKED = true
+const REGISTER_BLOCKED = Boolean(process.env.REGISTER_BLOCKED)
 
 passport.serializeUser((user, done) => {
   done(null, user)
