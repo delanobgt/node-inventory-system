@@ -26,7 +26,7 @@
       <div class="uk-margin">
         <select id="sel-scope" class="uk-select" required>
           <option disabled selected>Select a product</option>
-          <% for (let product of products) { %>
+          <% for (let product of _.sortBy(products, p => p.name)) { %>
           <option>
             <%= product.name %>
           </option>

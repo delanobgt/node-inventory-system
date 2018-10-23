@@ -10,6 +10,7 @@ let expressSession = require('express-session')
 let passport = require('passport')
 let flash = require('connect-flash')
 let moment = require('moment')
+let _ = require('lodash')
 
 // middlewares import
 let auth = require('./middlewares/auth')
@@ -45,6 +46,7 @@ app.use((req, res, next) => {
   res.locals.info = req.flash('info')
   res.locals.error = req.flash('error')
   res.locals.moment = moment
+  res.locals._ = _
   if (req.session.passport) res.locals.user = req.session.passport.user
   next()
 })
