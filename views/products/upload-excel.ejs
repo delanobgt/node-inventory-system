@@ -77,7 +77,7 @@
               ((row[1] || []).length >= 3 != (row[2] || []).length >= 2) )
       rows = rows.map(row => row.filter(cell => cell))
 
-      let newProducts = rows.map(row => Object.assign({}, { name: ProductMapping.map(row[1]) }))
+      let newProducts = rows.map(row => Object.assign({}, { name: ProductMapping.map(row[1].trim()).trim() }))
       // console.log(newProducts)
       // $('body').append('['+newProducts.map(p => '"'+p.name+'"')+']')
       // $('table').show()
