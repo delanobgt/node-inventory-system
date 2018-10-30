@@ -168,15 +168,16 @@ router.get('/initial-balance', async (req, res) => {
   }
 })
 
-router.get('/api/initial-balance/:productName', async (req, res) => {
+router.get('/api/initial-balance', async (req, res) => {
+  const { productName } = req.query
   try {
     let initialMutation = await db.Mutation.findOne({
       where: {
-        invoiceID: `##INITIAL[${req.params.productName}]##`
+        invoiceID: `##INITIAL[${productName}]##`
       }
     })
     initialMutation = initialMutation || {
-      invoiceID: `##INITIAL[${req.params.productName}]##`,
+      invoiceID: `##INITIAL[${productName}]##`,
       price: 0,
       quantity: 0
     }
@@ -187,22 +188,21 @@ router.get('/api/initial-balance/:productName', async (req, res) => {
   }
 })
 
-router.post('/api/initial-balance/:productName', async (req, res) => {
-  console.log(req.params.productName)
+router.post('/api/initial-balance', async (req, res) => {
+  const { productName } = req.body
   try {
     let product = await db.Product.findOne({
       where: {
-        name: req.params.productName
+        name: productName
       }
     })
-    console.log('product', product)
     let initialMutation = await db.Mutation.findOne({
       where: {
-        invoiceID: `##INITIAL[${req.params.productName}]##`
+        invoiceID: `##INITIAL[${productName}]##`
       }
     })
     if (!initialMutation) initialMutation = new db.Mutation()
-    initialMutation.set('invoiceID', `##INITIAL[${req.params.productName}]##`)
+    initialMutation.set('invoiceID', `##INITIAL[${productName}]##`)
     initialMutation.set('productID', product.id)
     initialMutation.set('doneAt', '1990-01-01')
     initialMutation.set('info', '##INITIAL##')

@@ -27,19 +27,19 @@
         <select id="sel-scope" class="uk-select" required>
           <option disabled selected>Select a product</option>
           <% for (let product of _.sortBy(products, p => p.name)) { %>
-          <option>
-            <%= product.name %>
-          </option>
+            <option>
+              <%= product.name %>
+            </option>
           <% } %>
         </select>
       </div>
       <div class="uk-margin">
         <label for="txt-qty">Remaining quantity</label>
-        <input id="txt-qty" class="uk-input" type="text" pattern="\d+" placeholder="Remaining quantity" required disabled>
+        <input id="txt-qty" class="uk-input" type="text" pattern="[1-9]\d*" placeholder="Remaining quantity" required disabled>
       </div>
       <div class="uk-margin" style="">
-        <label for="txt-price">Remaining price</label>
-        <input id="txt-price" class="uk-input" type="text" pattern="\d+" placeholder="Remaining price" required disabled>
+        <label for="txt-price">Remaining price (IDR)</label>
+        <input id="txt-price" class="uk-input" type="text" pattern="\d{3}(\.\d{3})*(,\d+)?" placeholder="Remaining price" required disabled>
       </div>
       <div class="uk-margin uk-text-right">
         <button class="uk-button uk-button-primary" type="submit" disabled>Save</button>
@@ -56,9 +56,12 @@
     function initForms() {
       $('#sel-scope').on('change', async function () {
         $('#form-create').find('*').attr('disabled', false)
-        let initialMutation = await $.get(`/mutations/api/initial-balance/${$(this).val()}`)
+        let initialMutation = await $.get(`/mutations/api/initial-balance`, {
+          productName: $(this).val()
+        })
+        console.log(initialMutation)
         $('#txt-qty').val(initialMutation.quantity)
-        $('#txt-price').val(initialMutation.price)
+        $('#txt-price').val(Number(initialMutation.price).toLocaleString('en-US', { maximumFractionDigits: 4 }).replace('.','#').replace(',','.').replace('#',','))
       })
 
       $('#form-create')[0].reset()
@@ -71,9 +74,10 @@
         UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
         try {
           // AJAX update
-          let initialMutation = await $.post(`/mutations/api/initial-balance/${productName}`, {
+          let initialMutation = await $.post(`/mutations/api/initial-balance`, {
             quantity: $(this).find('#txt-qty').val(),
-            price: $(this).find('#txt-price').val()
+            price: $(this).find('#txt-price').val().replace('.','').replace(',','.'),
+            productName,
           })
           
           UIkit.notification.closeAll()
@@ -83,7 +87,7 @@
           UIkit.notification.closeAll()
           UIkit.notification('<span uk-icon="icon: ban"></span> Error Initial Balance')
         } finally {
-          $(this).find('button').attr('disabled', true)
+          $(this).find('button').attr('disabled', false)
         }
       })
     }

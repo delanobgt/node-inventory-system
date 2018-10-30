@@ -186,7 +186,7 @@ let ProductMapping = (function() {
     "ASPAL 140 KG": "ASPAL 140 KG",
     "ASPAL SHELL @ 155 KG": "ASPAL SHELL @ 155 KG",
     "GREASE J ONE LITIUM NLG-3": "GREASE J ONE LITIUM NLG-3",
-    "Trafolube A @ 200 Ltr": "Trafolube A @ 200 Ltr",
+    // "Trafolube A @ 200 Ltr": "Trafolube A @ 200 Ltr",
     "ASPAL 185KG": "ASPAL 185KG",
     "GREASE LITHIUM J ONE 180KG": "GREASE LITHIUM J ONE 180KG",
     "MOBIL FLEX 44/45 DRUM 209L": "MOBIL FLEX 44 45 DRUM 209L",
@@ -382,7 +382,9 @@ let ProductMapping = (function() {
     "TERMO 22 @ 209 LTR": "TERMO 22 @209L",
     "Minyak Rem Jumbo @ 1 Ltr seharusnya dari MRJ12":
       "Minyak Rem Jumbo @ 1 Ltr seharusnya dari MRJ12",
-    "Transformer Oil Idemitsu @ 209 Ltr": "Transformer Oil Idemitsu @ 200 Ltr"
+    "Transformer Oil Idemitsu @ 209 Ltr": "Transformer Oil Idemitsu @ 200 Ltr",
+    "Trafolube A @ 200 Ltr": "TRAFOLUBE A @200L", // update1
+    "Shell Spirax S4 TXM @ 209 Ltr": "Shell Spirax S4 TMX @ 209 Ltr", // update1
   };
 
   return {
