@@ -314,7 +314,7 @@ let ProductMapping = (function() {
     "EVALUBE 2T @ 1 LTR": "EVALUBE 2T @ 1 LTR",
     "F.MACH 500 24X500CC": "F.MACH 500 24X500CC",
     "Grase Champion ": "Grase Champion",
-    "Gemuk Rotary CG 202": "Gemuk Rotary CG 202",
+    "Gemuk Rotary CG 202": "Gemuk Rotary CG 202 Blue",
     "GEMUK ROTARY HIJAU @ 15KG": "GEMUK ROTARY HIJAU @ 15KG",
     "GEMUK ROTATY 16 KG": "GEMUK ROTATY 16 KG",
     "Gease Rotary EP 3 @ 15 Kg": "Gease Rotary EP 3 @ 15 Kg",
