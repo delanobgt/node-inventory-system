@@ -229,7 +229,8 @@ let ProductMapping = (function() {
     "FASTRON FULLY SYN 0W-50 PL2 12 X 1 L": "FASTRON FULLY SYN 0W/50 SM @12X1L",
     "FASTRON Fully Syn 0W-50 SM PL1 20X1L": "FASTRON FULLY SYN 0W/50 SM @20X1L",
     "FASTRON DIESEL 15W-40 API CI4 12 X 1 L":
-      "FASTRON DIESEL 15W-40 CI4 @12x1L",
+      "FASTRON DIESEL 15W-40 CI4 @12X1L",
+    "FASTRON DIESEL 15W-40 CI4 @12x1L": "FASTRON DIESEL 15W-40 CI4 @12X1L",
     "FASTRON DIESEL 15W-40 API CI4 6 X 4L":
       "FASTRON DIESEL 15W-40 API CI4 @6X4L",
     "FASTRON GOLD 5W-30 API SN/CF 6 X 1L": "FASTRON GOLD 5W-30 SN @6X1L",
@@ -290,7 +291,8 @@ let ProductMapping = (function() {
       "FASTRON TECHNO 10W/40 SN LAMBO @20X1L",
     "FASTRON TECHNO 10W-40 SN LAMBO 6X4L":
       "FASTRON TECHNO 10W/40 SN LAMBO @6X4L",
-    "FASTRON DIESEL 15W-40 CI4 (LAM) 20X1L": "FASTRON DIESEL 15W-40 CI4 @20X1L",
+    "FASTRON DIESEL 15W-40 CI4 (LAM) 20X1L": "FASTRON DIESEL 15W/40 CI4 @20X1L",
+    "FASTRON DIESEL 15W-40 CI4 @20X1L": "FASTRON DIESEL 15W/40 CI4 @20X1L",
     "FASTRON DIESEL 15W-40 CI4 (LAM) 6X4L":
       "FASTRON DIESEL 15W-40 CI4 GEN VI @6X4L",
     "ENDURO 4T 20W-50 API SL JASO MA 24X0,8L": "ENDURO 4T 20W/50 SL @24X0,8L",
@@ -385,7 +387,7 @@ let ProductMapping = (function() {
       "Minyak Rem Jumbo @ 1 Ltr seharusnya dari MRJ12",
     "Transformer Oil Idemitsu @ 209 Ltr": "Transformer Oil Idemitsu @ 200 Ltr",
     "Trafolube A @ 200 Ltr": "TRAFOLUBE A @200L", // update1
-    "Shell Spirax S4 TXM @ 209 Ltr": "Shell Spirax S4 TMX @ 209 Ltr", // update1
+    "Shell Spirax S4 TXM @ 209 Ltr": "Shell Spirax S4 TMX @ 209 Ltr" // update1
   };
 
   return {
