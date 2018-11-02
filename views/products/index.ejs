@@ -136,7 +136,7 @@
       UIkit.notification('<span uk-icon="icon: cog"></span> Fetching..')
       try {
         let rows = await $.get('/products/api')
-        rows = rows.filter(row => row.name.includes('FASTRON DIESEL 15W-40 CI4 @'))
+        // rows = rows.filter(row => row.name.includes('FASTRON DIESEL 15W-40 CI4 @'))
         let formattedRows = rows.map(row => [
           row.id,
           row.name,
