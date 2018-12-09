@@ -78,6 +78,8 @@
         return
       }
 
+      console.log(rows)
+
       rows = rows.filter(row =>
         (row[1] === 'Deskripsi Barang') ||
         (![].includes(row[4]) &&
@@ -163,7 +165,7 @@
     }
 
     function cleanNumber(number) {
-      return Number(number.replace(/[^0-9]+/g, ''))
+      return Number((number || '0').replace(/[^0-9]+/g, ''))
     }
   </script>
 </body>
