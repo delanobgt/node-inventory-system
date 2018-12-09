@@ -70,7 +70,7 @@
         })
         let formattedRows = [], counter = 1
         let remainingQuantity = 0, remainingPrice = 0, averagePrice = 0
-        if (rows[0].info === '##INITIAL##') {
+        if (rows[0].type === 'Initial') {
           remainingQuantity = rows[0].quantity
           remainingPrice = rows[0].price
           averagePrice = remainingPrice / remainingQuantity

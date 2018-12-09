@@ -88,17 +88,25 @@
       let newMutations = []
       let currentProductName = null
       for (let row of rows) {
+        let doneAt = cleanDate(row[0])
+        let type = Number(row[3]) > 0 ? 'Buy' : 'Sell'
+
+        let price = Number(row[3]) > 0 ? cleanNumber(row[4]) : cleanNumber(row[7])
+        if (type === 'Buy' && moment('2017-01-01').isSameOrBefore(doneAt) && moment(doneAt).isBefore('2018-08-01')) {
+          price *= 1.1
+        }
+
         if (row[0] === 'Deskripsi Barang') {
           currentProductName = ProductMapping.map(row[2].trim())
         } else {
           let newMutation = {
             invoiceID: row[2],
             productName: currentProductName,
-            doneAt: cleanDate(row[0]),
+            doneAt,
             info: row[1],
-            type: Number(row[3]) > 0 ? 'Buy' : 'Sell',
+            type,
             quantity: Number(row[3]) > 0 ? Number(row[3]) : Number(row[6]),
-            price: Number(row[3]) > 0 ? cleanNumber(row[4]) : cleanNumber(row[7])
+            price,
           }
           newMutations.push(newMutation)
         }

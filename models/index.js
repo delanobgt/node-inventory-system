@@ -4,7 +4,7 @@ let Sequelize = require('sequelize')
 let sequelize = new Sequelize('', '', '', {
   dialect: 'sqlite',
   operatorsAliases: false,
-  storage: path.join(__dirname, '../db/inventory.db')
+  storage: path.join(__dirname, '../../inventory-db/inventory.db')
 })
 
 const User = require('./user')(sequelize)

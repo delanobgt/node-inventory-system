@@ -20,7 +20,7 @@ let model = function (sequelize) {
       allowNull: false
     },
     type: {
-      type: Sequelize.ENUM('Buy', 'Sell'),
+      type: Sequelize.ENUM('Buy', 'Sell', 'Initial'),
       allowNull: false
     },
     quantity: {

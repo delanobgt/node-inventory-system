@@ -6,7 +6,7 @@ let model = function (sequelize) {
       type: Sequelize.STRING,
       allowNull: false,
       unique: true
-    }
+    },
   })
 }
 
