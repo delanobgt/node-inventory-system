@@ -58,11 +58,18 @@
 
   </div>
 
-  <table style="display:none">
+  <br/>
+  <table style="display:none" border="1">
+    <thead>
+      <tr>
+        <th>No.</th>
+        <th>Non-Existing Products</th>
+      </tr>
+    </thead>
     <tbody>
-
     </tbody>
   </table>
+  <br/>
 
   <% include ../partials/script %>
   <script src="/javascripts/libs/xls.js"></script>
@@ -71,29 +78,44 @@
   <script src="/javascripts/product-mapping.js"></script>
   <script>
     XLSParser.onParsed(async (rows) => {
-      if (rows[1][1] !== 'Rincian Valuasi Persediaan') {
+      if (rows[1][0] !== 'Rincian Valuasi Persediaan') {
         console.log('Invalid Excel File')
         UIkit.notification.closeAll()
         UIkit.notification('<span uk-icon="icon: ban"></span> Invalid Excel File')
         return
       }
 
-      console.log(rows)
-
       rows = rows.filter(row =>
-        (row[1] === 'Deskripsi Barang') ||
-        (![].includes(row[4]) &&
-        Object.keys(row).length === 11) 
+        (row[1] !== 'Tanggal') && 
+        (
+          (row[0] === 'Deskripsi Barang') ||
+          (![].includes(row[4]) && Object.keys(row).length === 9) 
+        )
       )
       rows = rows.map(row => row.filter(cell => cell))
 
+      console.log(rows)
+      // $('table').show()
+      // $('tbody').empty()
+      // rows.forEach((row, index) => {
+      //   let $tr = $('<tr>').append($('<td>').text(index))
+      //   row.forEach(cell => {
+      //     $tr.append($('<td>').text(cell))
+      //   })
+      //   $('tbody').append($tr)
+      // })
+
+      const ghostProducts = new Set()
+
+      UIkit.notification.closeAll()
+      UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
       let newMutations = []
       let currentProductName = null
       for (let row of rows) {
         let doneAt = cleanDate(row[0])
-        let type = Number(row[3]) > 0 ? 'Buy' : 'Sell'
+        let type = cleanNumber(row[3]) > 0 ? 'Buy' : 'Sell'
 
-        let price = Number(row[3]) > 0 ? cleanNumber(row[4]) : cleanNumber(row[7])
+        let price = cleanNumber(row[3]) > 0 ? cleanNumber(row[4])/cleanNumber(row[3]) : cleanNumber(row[6])/cleanNumber(row[5])
         if (type === 'Buy' && moment('2017-01-01').isSameOrBefore(doneAt) && moment(doneAt).isBefore('2018-08-01')) {
           price *= 1.1
         }
@@ -107,41 +129,57 @@
             doneAt,
             info: row[1],
             type,
-            quantity: Number(row[3]) > 0 ? Number(row[3]) : Number(row[6]),
+            quantity: cleanNumber(row[3]) > 0 ? cleanNumber(row[3]) : cleanNumber(row[5]),
             price,
           }
-          newMutations.push(newMutation)
+          console.log(newMutation)
+          // newMutations.push(newMutation)
+          $('#file-button').text('Please wait..').attr('disabled', true)
+          try {
+            // AJAX create bulk
+            let fetchedMutation = await $.post(`/mutations/api`, newMutation)
+          } catch (err) {
+            console.log('error', err)
+            if (err.responseJSON.productName) ghostProducts.add(err.responseJSON.productName)
+            UIkit.notification.closeAll()
+            UIkit.notification('<span uk-icon="icon: ban"></span> Error occured!')
+          }
         }
       }
+      UIkit.notification.closeAll()
+      UIkit.notification('<span uk-icon="icon: check"></span> Added all')
+      $('#file-button').text('Select Excel File..').attr('disabled', false)
 
-      // $('table').show()
+      $('table').show()
       $('tbody').empty()
-      rows.forEach((row, index) => {
-        let $tr = $('<tr>').append($('<td>').text(index))
-        row.forEach(cell => {
-          $tr.append($('<td>').text(cell))
-        })
-        $('tbody').append($tr)
+      Array.from(ghostProducts).forEach((productName, index) => {
+        $('tbody').append(
+          $('<tr>').append(
+            $('<td>').text(index + 1)
+          ).append(
+            $('<td>').text(productName)
+          )
+        )
       })
 
-      UIkit.notification.closeAll()
-      UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
-      $('#file-button').text('Please wait..').attr('disabled', true)
-      try {
-        // AJAX create bulk
-        let fetchedMutations = await $.post(`/mutations/api/bulk`, {
-          mutations: newMutations
-        })
-        console.log(fetchedMutations)
-        UIkit.notification.closeAll()
-        UIkit.notification('<span uk-icon="icon: check"></span> Added all')
-      } catch (err) {
-        console.log('error', err)
-        UIkit.notification.closeAll()
-        UIkit.notification('<span uk-icon="icon: ban"></span> Error / Duplicate Products')
-      } finally {
-        $('#file-button').text('Select Excel File..').attr('disabled', false)
-      }
+    //   UIkit.notification.closeAll()
+    //   UIkit.notification('<span uk-icon="icon: cog"></span> Saving..')
+    //   $('#file-button').text('Please wait..').attr('disabled', true)
+    //   try {
+    //     // AJAX create bulk
+    //     let fetchedMutations = await $.post(`/mutations/api/bulk`, {
+    //       mutations: newMutations
+    //     })
+    //     console.log(fetchedMutations)
+    //     UIkit.notification.closeAll()
+    //     UIkit.notification('<span uk-icon="icon: check"></span> Added all')
+    //   } catch (err) {
+    //     console.log('error', err)
+    //     UIkit.notification.closeAll()
+    //     UIkit.notification('<span uk-icon="icon: ban"></span> Error occured!')
+    //   } finally {
+    //     $('#file-button').text('Select Excel File..').attr('disabled', false)
+    //   }
     })
 
     function cleanDate(date) {
@@ -164,8 +202,9 @@
       return moment(cleanDate, 'DD MMM YYYY').format('YYYY-MM-DD')
     }
 
-    function cleanNumber(number) {
-      return Number((number || '0').replace(/[^0-9]+/g, ''))
+    function cleanNumber(number = '0') {
+      const cleanString = number.replace(/\./g, '').replace(/,/g, '.')
+      return Number(cleanString)
     }
   </script>
 </body>

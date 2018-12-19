@@ -11,6 +11,7 @@ let passport = require('passport')
 let flash = require('connect-flash')
 let moment = require('moment')
 let _ = require('lodash')
+let db = require('./models')
 
 // middlewares import
 let auth = require('./middlewares/auth')
@@ -34,6 +35,7 @@ app.use(expressSession({
   saveUninitialized: false
 }))
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(bodyParser({ limit: '16mb' }));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(methodOverride('_method'))
@@ -78,4 +80,15 @@ app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`)
   console.log('Press CTRL+C to exit.')
   console.log()
+
+  // db.Mutation.destroy({
+  //   where: {
+  //     type: 'Buy'
+  //   }
+  // })
+  // db.Mutation.destroy({
+  //   where: {
+  //     type: 'Sell'
+  //   }
+  // })
 })

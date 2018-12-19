@@ -56,7 +56,7 @@ router.get('/api', async (req, res) => {
     res.json(mutations)
   } catch (err) {
     console.log(err)
-    res.status(404).json({
+    res.status(422).json({
       msg: 'Cannot get Mutations data'
     })
   }
@@ -69,6 +69,12 @@ router.post('/api', async (req, res) => {
         name: req.body.productName
       }
     })
+    if (!product) {
+      res.status(422).json({
+        msg: `product not found: ${req.body.productName}`,
+        productName: req.body.productName
+      })
+    }
     let newMutation = await db.Mutation.create({
       invoiceID: req.body.invoiceID,
       productID: product.id,
@@ -76,12 +82,12 @@ router.post('/api', async (req, res) => {
       info: req.body.info,
       type: req.body.type,
       quantity: req.body.quantity,
-      price: req.body.price || -1
+      price: req.body.price || 0
     })
     res.json(newMutation)
   } catch (err) {
     console.log(err)
-    res.status(404).json({
+    res.status(422).json({
       msg: 'Error/Duplicate Mutation'
     })
   }
@@ -89,6 +95,7 @@ router.post('/api', async (req, res) => {
 
 router.post('/api/bulk', async (req, res) => {
   try {
+    console.log('LEN', req.body.mutations.length)
     let productID = {}
     let products = await db.Product.findAll()
     products.forEach(product => { productID[product.name] = product.id })
